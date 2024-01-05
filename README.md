@@ -4,6 +4,9 @@ This mod allows you to easily upload a track to the boombox by using chat
 
 If you liked the mod, please don't forget to give it a thumbs up
 
+[ThunderStore link](https://thunderstore.io/c/lethal-company/p/KoderTeh/Boombox_Controller/)
+[NexusMod link](https://www.nexusmods.com/lethalcompany/mods/23)
+
 ### Visual
 
 Standard boombox visuals:
