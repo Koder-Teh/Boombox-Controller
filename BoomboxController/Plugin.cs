@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using DunGen;
 using GameNetcodeStuff;
@@ -41,7 +42,7 @@ using static UnityEngine.UIElements.StylePropertyAnimationSystem;
 
 namespace BoomboxController
 {
-    [BepInPlugin("KoderTech.BoomboxController", "BoomboxController", "1.1.6")]
+    [BepInPlugin("KoderTech.BoomboxController", "BoomboxController", "1.1.7")]
     public class Plugin : BaseUnityPlugin
     {
         public static Plugin instance;

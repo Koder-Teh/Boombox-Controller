@@ -1,8 +1,10 @@
 ﻿using BepInEx;
+using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using DunGen;
 using GameNetcodeStuff;
 using HarmonyLib;
+using Mono.Cecil;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
@@ -73,6 +75,7 @@ namespace BoomboxController
         public static string[] sumbols = { "+" };
         public static KeyControl up = null;
         public static KeyControl down = null;
+        private static bool blockcompatibility = false;
 
         #region Стартеры
 
@@ -83,10 +86,16 @@ namespace BoomboxController
             using (StreamWriter sw = new StreamWriter(@"BoomboxController\logReport.txt"))
             {
                 sw.WriteLine($"Game Version: {__instance.gameVersionNum}");
-                sw.WriteLine($"Plugins: {new DirectoryInfo(@"BepInEx\plugins").GetFiles().Length}");
-                foreach (var item in new DirectoryInfo(@"BepInEx\plugins").GetFiles())
+                sw.WriteLine($"Plugins: {Chainloader.PluginInfos.Count}");
+                foreach (var item in Chainloader.PluginInfos)
                 {
-                    sw.WriteLine(item.Name);
+                    if (item.Key == "BoomboxSyncFix")
+                    {
+                        Plugin.instance.Log("Чтобы мод работал, удалите мод BoomboxSyncFix.");
+                        Plugin.instance.Log("For the mod to work, uninstall the BoomboxSyncFix mod.");
+                        blockcompatibility = true;
+                    }
+                    sw.WriteLine(item.Key + " " + item.Value.Location);
                 }
             }
         }
@@ -519,12 +528,113 @@ namespace BoomboxController
                         }
                         break;
                     case "bplay":
+                        if (vs.Length == 1) break;
                         Regex regex = new Regex("^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$");
                         if (regex.IsMatch(vs[1]))
                         {
                             var url = vs[1].Remove(0, 8);
                             switch (url.Substring(0, url.IndexOf('/')))
                             {
+                                case "youtu.be":
+                                    boomboxItem.boomboxAudio.Stop();
+                                    boomboxItem.boomboxAudio.PlayOneShot(boomboxItem.stopAudios[UnityEngine.Random.Range(0, boomboxItem.stopAudios.Length)]);
+                                    timesPlayedWithoutTurningOff = 0;
+                                    boomboxItem.isPlayingMusic = false;
+                                    boomboxItem.isBeingUsed = false;
+                                    LoadingMusicBoombox = true;
+                                    FileInfo[] files = new DirectoryInfo(@"BoomboxController\other").GetFiles("*.mp3");
+                                    if (files.Length == 1)
+                                    {
+                                        File.Delete(@$"BoomboxController\other\{files[0].Name}");
+                                    }
+                                    DrawString(__instance, Plugin.config.GetLang().main_7.Value, "Boombox YouTube", nameOfUserWhoTyped);
+                                    if (!isplayList)
+                                    {
+                                        isplayList = true;
+                                        await Task.Run(() =>
+                                        {
+                                            bool succeeded = false;
+                                            bool part = false;
+                                            Process info = new Process();
+                                            info.StartInfo.FileName = @"BoomboxController\other\yt-dlp.exe";
+                                            info.StartInfo.UseShellExecute = false;
+                                            info.StartInfo.Arguments = $"-f bestaudio --extract-audio --ignore-config --audio-format mp3 --audio-quality 0 {vs[1]}";
+                                            info.StartInfo.WorkingDirectory = @$"BoomboxController\other";
+                                            info.StartInfo.CreateNoWindow = true;
+                                            info.Start();
+                                            Id = info.Id;
+                                            while (!succeeded)
+                                            {
+                                                if (part)
+                                                {
+                                                    if (File.Exists(@$"BoomboxController\other\{NameTrack}"))
+                                                    {
+                                                        succeeded = true;
+                                                        break;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    foreach (FileInfo f in new DirectoryInfo(@"BoomboxController\other").GetFiles("*.mp3"))
+                                                    {
+                                                        if (f.Exists)
+                                                        {
+                                                            NameTrack = f.Name;
+                                                        }
+                                                    }
+                                                    if (Process.GetProcessById(info.Id).HasExited)
+                                                    {
+                                                        if (File.Exists(@$"BoomboxController\other\{NameTrack}"))
+                                                        {
+                                                            part = true;
+                                                        }
+                                                        else
+                                                        {
+                                                            DrawString(__instance, Plugin.config.GetLang().main_11.Value, "Boombox YouTube", nameOfUserWhoTyped);
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                System.Threading.Thread.Sleep(1000);
+                                            }
+                                        });
+                                        if (!File.Exists(@$"BoomboxController\other\{NameTrack}"))
+                                        {
+                                            LoadingMusicBoombox = false;
+                                            isplayList = false;
+                                            break;
+                                        }
+                                        bool sumbBlock = false;
+                                        List<string> sumbol = new List<string>();
+                                        FileInfo ext = new FileInfo(@$"BoomboxController\other\{NameTrack}");
+                                        foreach (string sumb in sumbols)
+                                        {
+                                            if (ext.Name.Contains(sumb))
+                                            {
+                                                sumbol.Add(sumb);
+                                                sumbBlock = true;
+                                            }
+                                        }
+                                        if (sumbBlock)
+                                        {
+                                            string NameFile = String.Empty;
+                                            foreach (string sumb in sumbol)
+                                            {
+                                                NameFile = NameTrack.Replace(sumb, "");
+                                                ext.MoveTo(@$"BoomboxController\other\{NameTrack.Replace(sumb, "")}");
+                                            }
+                                            currectTrack = 0;
+                                            bom.Start(bom.GetAudioClip(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\{NameFile}", boomboxItem, AudioType.MPEG));
+                                            DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox YouTube", nameOfUserWhoTyped);
+                                        }
+                                        else
+                                        {
+                                            currectTrack = 0;
+                                            bom.Start(bom.GetAudioClip(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\{NameTrack}", boomboxItem, AudioType.MPEG));
+                                            DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox YouTube", nameOfUserWhoTyped);
+                                        }
+                                    }
+                                    break;
                                 case "www.youtube.com":
                                     if (vs[1].Contains("search_query"))
                                     {
@@ -802,6 +912,7 @@ namespace BoomboxController
                         }
                         break;
                     case "btime":
+                        if (vs.Length == 1) break;
                         string[] arg = vs[1].Split(':');
                         switch (arg.Length)
                         {
@@ -925,6 +1036,7 @@ namespace BoomboxController
                         }
                         break;
                     case "bvolume":
+                        if (vs.Length == 1) break;
                         float volume = boomboxItem.boomboxAudio.volume;
                         float correct_volume = (Convert.ToInt32(vs[1]) / 10) * 0.1f;
                         if (volume == correct_volume) break;
@@ -935,6 +1047,7 @@ namespace BoomboxController
                         }
                         break;
                     case "btrack":
+                        if (vs.Length == 1) break;
                         if (Convert.ToInt32(vs[1]) > 0)
                         {
                             if (Convert.ToInt32(vs[1]) <= totalTack)
@@ -976,7 +1089,10 @@ namespace BoomboxController
             }
             else
             {
-                if (IsCommand(__instance.chatTextField.text, new string[] { "bhelp", "bplay", "btime", "bvolume", "btrack" })) SubmitChat(__instance);
+                if (!blockcompatibility)
+                {
+                    if (IsCommand(__instance.chatTextField.text, new string[] { "bhelp", "bplay", "btime", "bvolume", "btrack" })) SubmitChat(__instance);
+                }
             }
         }
 
