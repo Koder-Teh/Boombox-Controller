@@ -11,6 +11,7 @@ namespace BoomboxController
     {
         public ConfigEntry<bool> requstbattery;
         public ConfigEntry<bool> pocketitem;
+        public ConfigEntry<bool> radiuscheck;
         public ConfigEntry<string> languages;
         public ConfigEntry<bool> visual;
         public ConfigEntry<string> body;
@@ -23,6 +24,7 @@ namespace BoomboxController
             var customFile = new ConfigFile(@"BoomboxController\boombox_controller.cfg", true);
             requstbattery = customFile.Bind("General.Toggles", "RequestBattery", false, "Enable/disable boombox battery (true = Enable; false = Disable)");
             pocketitem = customFile.Bind("General.Toggles", "PocketItem", true, "Enable/disable music in your pocket. (true = Enable; false = Disable)");
+            radiuscheck = customFile.Bind("General.Toggles", "RadiusUse", true, "Enable/disable the command radius of the boombox. (true = Radius greater than 25; false = Standard radius 25)");
             languages = customFile.Bind("General", "Languages", "en", "EN/RU");
             visual = customFile.Bind("Visual", "Visual", false, "Enable/Disable Visual Elements of Boombox");
             body = customFile.Bind("Visual", "Body", "#FFFFFF", "Color body Boombox");
@@ -55,7 +57,7 @@ namespace BoomboxController
             {
                 var customFile = new ConfigFile(@"BoomboxController\lang\boombox_ru.cfg", true);
                 main_1 = customFile.Bind("General", "Main_1", "Пожалуйста, подождите, загружаются дополнительные библиотеки, чтобы модификация заработала.");
-                main_2 = customFile.Bind("General", "Main_2", "Взять BoomBox[1.1.7] : [E]\n@2 - @3\n@1 громкость\nСейчас играет: @4\nДоступных треков: @5");
+                main_2 = customFile.Bind("General", "Main_2", "Взять BoomBox[1.1.8] : [E]\n@2 - @3\n@1 громкость\nСейчас играет: @4\nДоступных треков: @5");
                 main_3 = customFile.Bind("General", "Main_3", "Все дополнительные библиотеки загружены, теперь вы можете использовать команды для бумбокса.");
                 main_4 = customFile.Bind("General", "Main_4", "Подождите, трек еще загружается!");
                 main_5 = customFile.Bind("General", "Main_5", "Команды:\n/bplay - Проиграть музыку\n/btime - Изменить позицию песни\n/bvolume - Изменить громкость трека");
@@ -74,7 +76,7 @@ namespace BoomboxController
             {
                 var customFile = new ConfigFile(@"BoomboxController\lang\boombox_en.cfg", true);
                 main_1 = customFile.Bind("General", "Main_1", "Please wait, additional libraries are being loaded for the modification to work.");
-                main_2 = customFile.Bind("General", "Main_2", "Pickup BoomBox[1.1.7] : [E]\n@2 - @3\n@1 volume\nNow playing: @4\nAvailable tracks: @5");
+                main_2 = customFile.Bind("General", "Main_2", "Pickup BoomBox[1.1.8] : [E]\n@2 - @3\n@1 volume\nNow playing: @4\nAvailable tracks: @5");
                 main_3 = customFile.Bind("General", "Main_3", "All libraries have loaded, now you can use the boombox commands.");
                 main_4 = customFile.Bind("General", "Main_4", "Another track is being uploaded to the boombox!");
                 main_5 = customFile.Bind("General", "Main_5", "Commands:\n/bplay - Play music\n/btime - Change the position of the song\n/bvolume - Change Boombox volume");

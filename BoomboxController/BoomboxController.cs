@@ -535,103 +535,219 @@ namespace BoomboxController
                             var url = vs[1].Remove(0, 8);
                             switch (url.Substring(0, url.IndexOf('/')))
                             {
-                                case "youtu.be":
-                                    boomboxItem.boomboxAudio.Stop();
-                                    boomboxItem.boomboxAudio.PlayOneShot(boomboxItem.stopAudios[UnityEngine.Random.Range(0, boomboxItem.stopAudios.Length)]);
-                                    timesPlayedWithoutTurningOff = 0;
-                                    boomboxItem.isPlayingMusic = false;
-                                    boomboxItem.isBeingUsed = false;
-                                    LoadingMusicBoombox = true;
-                                    FileInfo[] files = new DirectoryInfo(@"BoomboxController\other").GetFiles("*.mp3");
-                                    if (files.Length == 1)
+                                case "music.youtube.com":
+                                    if (vs[1].Contains("list"))
                                     {
-                                        File.Delete(@$"BoomboxController\other\{files[0].Name}");
+                                        DrawString(__instance, Plugin.config.GetLang().main_6.Value, "Boombox Music YouTube", nameOfUserWhoTyped);
+                                        break;
                                     }
-                                    DrawString(__instance, Plugin.config.GetLang().main_7.Value, "Boombox YouTube", nameOfUserWhoTyped);
-                                    if (!isplayList)
+                                    else
                                     {
-                                        isplayList = true;
-                                        await Task.Run(() =>
+                                        boomboxItem.boomboxAudio.Stop();
+                                        boomboxItem.boomboxAudio.PlayOneShot(boomboxItem.stopAudios[UnityEngine.Random.Range(0, boomboxItem.stopAudios.Length)]);
+                                        timesPlayedWithoutTurningOff = 0;
+                                        boomboxItem.isPlayingMusic = false;
+                                        boomboxItem.isBeingUsed = false;
+                                        LoadingMusicBoombox = true;
+                                        FileInfo[] files = new DirectoryInfo(@"BoomboxController\other").GetFiles("*.mp3");
+                                        if (files.Length == 1)
                                         {
-                                            bool succeeded = false;
-                                            bool part = false;
-                                            Process info = new Process();
-                                            info.StartInfo.FileName = @"BoomboxController\other\yt-dlp.exe";
-                                            info.StartInfo.UseShellExecute = false;
-                                            info.StartInfo.Arguments = $"-f bestaudio --extract-audio --ignore-config --audio-format mp3 --audio-quality 0 {vs[1]}";
-                                            info.StartInfo.WorkingDirectory = @$"BoomboxController\other";
-                                            info.StartInfo.CreateNoWindow = true;
-                                            info.Start();
-                                            Id = info.Id;
-                                            while (!succeeded)
+                                            File.Delete(@$"BoomboxController\other\{files[0].Name}");
+                                        }
+                                        DrawString(__instance, Plugin.config.GetLang().main_7.Value, "Boombox Music YouTube", nameOfUserWhoTyped);
+                                        if (!isplayList)
+                                        {
+                                            isplayList = true;
+                                            await Task.Run(() =>
                                             {
-                                                if (part)
+                                                bool succeeded = false;
+                                                bool part = false;
+                                                Process info = new Process();
+                                                info.StartInfo.FileName = @"BoomboxController\other\yt-dlp.exe";
+                                                info.StartInfo.UseShellExecute = false;
+                                                info.StartInfo.Arguments = $"-f bestaudio --extract-audio --ignore-config --audio-format mp3 --audio-quality 0 {vs[1]}";
+                                                info.StartInfo.WorkingDirectory = @$"BoomboxController\other";
+                                                info.StartInfo.CreateNoWindow = true;
+                                                info.Start();
+                                                Id = info.Id;
+                                                while (!succeeded)
                                                 {
-                                                    if (File.Exists(@$"BoomboxController\other\{NameTrack}"))
-                                                    {
-                                                        succeeded = true;
-                                                        break;
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    foreach (FileInfo f in new DirectoryInfo(@"BoomboxController\other").GetFiles("*.mp3"))
-                                                    {
-                                                        if (f.Exists)
-                                                        {
-                                                            NameTrack = f.Name;
-                                                        }
-                                                    }
-                                                    if (Process.GetProcessById(info.Id).HasExited)
+                                                    if (part)
                                                     {
                                                         if (File.Exists(@$"BoomboxController\other\{NameTrack}"))
                                                         {
-                                                            part = true;
-                                                        }
-                                                        else
-                                                        {
-                                                            DrawString(__instance, Plugin.config.GetLang().main_11.Value, "Boombox YouTube", nameOfUserWhoTyped);
+                                                            succeeded = true;
                                                             break;
                                                         }
                                                     }
+                                                    else
+                                                    {
+                                                        foreach (FileInfo f in new DirectoryInfo(@"BoomboxController\other").GetFiles("*.mp3"))
+                                                        {
+                                                            if (f.Exists)
+                                                            {
+                                                                NameTrack = f.Name;
+                                                            }
+                                                        }
+                                                        if (Process.GetProcessById(info.Id).HasExited)
+                                                        {
+                                                            if (File.Exists(@$"BoomboxController\other\{NameTrack}"))
+                                                            {
+                                                                part = true;
+                                                            }
+                                                            else
+                                                            {
+                                                                DrawString(__instance, Plugin.config.GetLang().main_11.Value, "Boombox Music YouTube", nameOfUserWhoTyped);
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                    System.Threading.Thread.Sleep(1000);
                                                 }
-                                                System.Threading.Thread.Sleep(1000);
-                                            }
-                                        });
-                                        if (!File.Exists(@$"BoomboxController\other\{NameTrack}"))
-                                        {
-                                            LoadingMusicBoombox = false;
-                                            isplayList = false;
-                                            break;
-                                        }
-                                        bool sumbBlock = false;
-                                        List<string> sumbol = new List<string>();
-                                        FileInfo ext = new FileInfo(@$"BoomboxController\other\{NameTrack}");
-                                        foreach (string sumb in sumbols)
-                                        {
-                                            if (ext.Name.Contains(sumb))
+                                            });
+                                            if (!File.Exists(@$"BoomboxController\other\{NameTrack}"))
                                             {
-                                                sumbol.Add(sumb);
-                                                sumbBlock = true;
+                                                LoadingMusicBoombox = false;
+                                                isplayList = false;
+                                                break;
                                             }
-                                        }
-                                        if (sumbBlock)
-                                        {
-                                            string NameFile = String.Empty;
-                                            foreach (string sumb in sumbol)
+                                            bool sumbBlock = false;
+                                            List<string> sumbol = new List<string>();
+                                            FileInfo ext = new FileInfo(@$"BoomboxController\other\{NameTrack}");
+                                            foreach (string sumb in sumbols)
                                             {
-                                                NameFile = NameTrack.Replace(sumb, "");
-                                                ext.MoveTo(@$"BoomboxController\other\{NameTrack.Replace(sumb, "")}");
+                                                if (ext.Name.Contains(sumb))
+                                                {
+                                                    sumbol.Add(sumb);
+                                                    sumbBlock = true;
+                                                }
                                             }
-                                            currectTrack = 0;
-                                            bom.Start(bom.GetAudioClip(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\{NameFile}", boomboxItem, AudioType.MPEG));
-                                            DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox YouTube", nameOfUserWhoTyped);
+                                            if (sumbBlock)
+                                            {
+                                                string NameFile = String.Empty;
+                                                foreach (string sumb in sumbol)
+                                                {
+                                                    NameFile = NameTrack.Replace(sumb, "");
+                                                    ext.MoveTo(@$"BoomboxController\other\{NameTrack.Replace(sumb, "")}");
+                                                }
+                                                currectTrack = 0;
+                                                bom.Start(bom.GetAudioClip(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\{NameFile}", boomboxItem, AudioType.MPEG));
+                                                DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox Music YouTube", nameOfUserWhoTyped);
+                                            }
+                                            else
+                                            {
+                                                currectTrack = 0;
+                                                bom.Start(bom.GetAudioClip(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\{NameTrack}", boomboxItem, AudioType.MPEG));
+                                                DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox Music YouTube", nameOfUserWhoTyped);
+                                            }
                                         }
-                                        else
+                                    }
+                                    break;
+                                case "youtu.be":
+                                    if (vs[1].Contains("list"))
+                                    {
+                                        DrawString(__instance, Plugin.config.GetLang().main_6.Value, "Boombox Music YouTube", nameOfUserWhoTyped);
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        boomboxItem.boomboxAudio.Stop();
+                                        boomboxItem.boomboxAudio.PlayOneShot(boomboxItem.stopAudios[UnityEngine.Random.Range(0, boomboxItem.stopAudios.Length)]);
+                                        timesPlayedWithoutTurningOff = 0;
+                                        boomboxItem.isPlayingMusic = false;
+                                        boomboxItem.isBeingUsed = false;
+                                        LoadingMusicBoombox = true;
+                                        FileInfo[] filesy = new DirectoryInfo(@"BoomboxController\other").GetFiles("*.mp3");
+                                        if (filesy.Length == 1)
                                         {
-                                            currectTrack = 0;
-                                            bom.Start(bom.GetAudioClip(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\{NameTrack}", boomboxItem, AudioType.MPEG));
-                                            DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox YouTube", nameOfUserWhoTyped);
+                                            File.Delete(@$"BoomboxController\other\{filesy[0].Name}");
+                                        }
+                                        DrawString(__instance, Plugin.config.GetLang().main_7.Value, "Boombox YouTube", nameOfUserWhoTyped);
+                                        if (!isplayList)
+                                        {
+                                            isplayList = true;
+                                            await Task.Run(() =>
+                                            {
+                                                bool succeeded = false;
+                                                bool part = false;
+                                                Process info = new Process();
+                                                info.StartInfo.FileName = @"BoomboxController\other\yt-dlp.exe";
+                                                info.StartInfo.UseShellExecute = false;
+                                                info.StartInfo.Arguments = $"-f bestaudio --extract-audio --ignore-config --audio-format mp3 --audio-quality 0 {vs[1]}";
+                                                info.StartInfo.WorkingDirectory = @$"BoomboxController\other";
+                                                info.StartInfo.CreateNoWindow = true;
+                                                info.Start();
+                                                Id = info.Id;
+                                                while (!succeeded)
+                                                {
+                                                    if (part)
+                                                    {
+                                                        if (File.Exists(@$"BoomboxController\other\{NameTrack}"))
+                                                        {
+                                                            succeeded = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        foreach (FileInfo f in new DirectoryInfo(@"BoomboxController\other").GetFiles("*.mp3"))
+                                                        {
+                                                            if (f.Exists)
+                                                            {
+                                                                NameTrack = f.Name;
+                                                            }
+                                                        }
+                                                        if (Process.GetProcessById(info.Id).HasExited)
+                                                        {
+                                                            if (File.Exists(@$"BoomboxController\other\{NameTrack}"))
+                                                            {
+                                                                part = true;
+                                                            }
+                                                            else
+                                                            {
+                                                                DrawString(__instance, Plugin.config.GetLang().main_11.Value, "Boombox YouTube", nameOfUserWhoTyped);
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                    System.Threading.Thread.Sleep(1000);
+                                                }
+                                            });
+                                            if (!File.Exists(@$"BoomboxController\other\{NameTrack}"))
+                                            {
+                                                LoadingMusicBoombox = false;
+                                                isplayList = false;
+                                                break;
+                                            }
+                                            bool sumbBlock = false;
+                                            List<string> sumbol = new List<string>();
+                                            FileInfo ext = new FileInfo(@$"BoomboxController\other\{NameTrack}");
+                                            foreach (string sumb in sumbols)
+                                            {
+                                                if (ext.Name.Contains(sumb))
+                                                {
+                                                    sumbol.Add(sumb);
+                                                    sumbBlock = true;
+                                                }
+                                            }
+                                            if (sumbBlock)
+                                            {
+                                                string NameFile = String.Empty;
+                                                foreach (string sumb in sumbol)
+                                                {
+                                                    NameFile = NameTrack.Replace(sumb, "");
+                                                    ext.MoveTo(@$"BoomboxController\other\{NameTrack.Replace(sumb, "")}");
+                                                }
+                                                currectTrack = 0;
+                                                bom.Start(bom.GetAudioClip(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\{NameFile}", boomboxItem, AudioType.MPEG));
+                                                DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox YouTube", nameOfUserWhoTyped);
+                                            }
+                                            else
+                                            {
+                                                currectTrack = 0;
+                                                bom.Start(bom.GetAudioClip(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\{NameTrack}", boomboxItem, AudioType.MPEG));
+                                                DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox YouTube", nameOfUserWhoTyped);
+                                            }
                                         }
                                     }
                                     break;
@@ -1074,8 +1190,24 @@ namespace BoomboxController
         {
             if (chatMessage.Length > 50)
             {
-                MethodInfo method = ((object)__instance).GetType().GetMethod("AddPlayerChatMessageClientRpc", BindingFlags.Instance | BindingFlags.NonPublic);
-                method.Invoke(__instance, new object[2] { chatMessage, playerId });
+                __instance.GetType().GetMethod("AddPlayerChatMessageClientRpc", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(__instance, new object[2] { chatMessage, playerId });
+            }
+        }
+
+        [HarmonyPatch(typeof(HUDManager), "AddPlayerChatMessageClientRpc")]
+        [HarmonyPostfix]
+        [ClientRpc]
+        private static void AddPlayerChatMessageClientRpc_HUDManager(HUDManager __instance, string chatMessage, int playerId)
+        {
+            if (Plugin.config.radiuscheck.Value)
+            {
+                if (IsCommand(chatMessage, new string[] { "bhelp", "bplay", "btime", "bvolume", "btrack" }))
+                {
+                    if (!(Vector3.Distance(GameNetworkManager.Instance.localPlayerController.transform.position, __instance.playersManager.allPlayerScripts[playerId].transform.position) < 25f))
+                    {
+                        __instance.GetType().GetMethod("AddChatMessage", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(__instance, new object[2] { chatMessage, __instance.playersManager.allPlayerScripts[playerId].playerUsername });
+                    }
+                }
             }
         }
 
@@ -1091,7 +1223,23 @@ namespace BoomboxController
             {
                 if (!blockcompatibility)
                 {
-                    if (IsCommand(__instance.chatTextField.text, new string[] { "bhelp", "bplay", "btime", "bvolume", "btrack" })) SubmitChat(__instance);
+                    if (IsCommand(__instance.chatTextField.text, new string[] { "bhelp", "bplay", "btime", "bvolume", "btrack" }))
+                    {
+                        SubmitChat(__instance);
+                        return;
+                    }
+                }
+                if (!string.IsNullOrEmpty(__instance.chatTextField.text) && __instance.chatTextField.text.Length < 200)
+                {
+                    __instance.AddTextToChatOnServer(__instance.chatTextField.text, (int)__instance.localPlayer.playerClientId);
+                }
+                for (int i = 0; i < StartOfRound.Instance.allPlayerScripts.Length; i++)
+                {
+                    if (StartOfRound.Instance.allPlayerScripts[i].isPlayerControlled && Vector3.Distance(GameNetworkManager.Instance.localPlayerController.transform.position, StartOfRound.Instance.allPlayerScripts[i].transform.position) > 24.4f && (!GameNetworkManager.Instance.localPlayerController.holdingWalkieTalkie || !StartOfRound.Instance.allPlayerScripts[i].holdingWalkieTalkie))
+                    {
+                        __instance.playerCouldRecieveTextChatAnimator.SetTrigger("ping");
+                        break;
+                    }
                 }
             }
         }
@@ -1104,10 +1252,21 @@ namespace BoomboxController
             }
             for (int i = 0; i < StartOfRound.Instance.allPlayerScripts.Length; i++)
             {
-                if (StartOfRound.Instance.allPlayerScripts[i].isPlayerControlled && Vector3.Distance(GameNetworkManager.Instance.localPlayerController.transform.position, StartOfRound.Instance.allPlayerScripts[i].transform.position) > 24.4f && (!GameNetworkManager.Instance.localPlayerController.holdingWalkieTalkie || !StartOfRound.Instance.allPlayerScripts[i].holdingWalkieTalkie))
+                if (Plugin.config.radiuscheck.Value)
                 {
-                    __instance.playerCouldRecieveTextChatAnimator.SetTrigger("ping");
-                    break;
+                    if (StartOfRound.Instance.allPlayerScripts[i].isPlayerControlled && (!GameNetworkManager.Instance.localPlayerController.holdingWalkieTalkie || !StartOfRound.Instance.allPlayerScripts[i].holdingWalkieTalkie))
+                    {
+                        __instance.playerCouldRecieveTextChatAnimator.SetTrigger("ping");
+                        break;
+                    }
+                }
+                else
+                {
+                    if (StartOfRound.Instance.allPlayerScripts[i].isPlayerControlled && Vector3.Distance(GameNetworkManager.Instance.localPlayerController.transform.position, StartOfRound.Instance.allPlayerScripts[i].transform.position) > 24.4f && (!GameNetworkManager.Instance.localPlayerController.holdingWalkieTalkie || !StartOfRound.Instance.allPlayerScripts[i].holdingWalkieTalkie))
+                    {
+                        __instance.playerCouldRecieveTextChatAnimator.SetTrigger("ping");
+                        break;
+                    }
                 }
             }
             __instance.localPlayer.isTypingChat = false;
