@@ -72,10 +72,11 @@ namespace BoomboxController
         public static AudioClip[] musicList;
         public static QuitManager quit;
         public static QuitManager quits;
-        public static string[] sumbols = { "+" };
+        public static string[] sumbols = { "+", "#" };
         public static KeyControl up = null;
         public static KeyControl down = null;
         private static bool blockcompatibility = false;
+        public static bool waitAutoNext = false;
 
         #region Стартеры
 
@@ -212,8 +213,11 @@ namespace BoomboxController
                                         {
                                             if (!boomboxItem.isPlayingMusic)
                                             {
-                                                curretTime = 0;
-                                                totalTime = 0;
+                                                if (!waitAutoNext)
+                                                {
+                                                    curretTime = 0;
+                                                    totalTime = 0;
+                                                }
                                             }
                                             int currect_ost = (int)curretTime % 3600;
                                             string currect_hours = Mathf.Floor((int)curretTime / 3600).ToString("00");
@@ -374,6 +378,7 @@ namespace BoomboxController
                 }
             }
             __instance.boomboxAudio.volume = 0.5f;
+            __instance.itemProperties.weight = 0;
             __instance.musicAudios = null;
             __instance.itemProperties.requiresBattery = Plugin.config.requstbattery.Value;
             boomboxItem = __instance;
@@ -430,15 +435,58 @@ namespace BoomboxController
                 ___timesPlayedWithoutTurningOff = 0;
             }
             timesPlayedWithoutTurningOff = ___timesPlayedWithoutTurningOff;
+            if (musicList != null)
+            {
+                totalTack = musicList.Length;
+            }
             if (boomboxItem.isPlayingMusic)
             {
                 curretTime = boomboxItem.boomboxAudio.time;
                 totalTime = boomboxItem.boomboxAudio.clip.length;
+                if ((currectTrack + 1) != totalTack)
+                {
+                    if(Math.Floor(curretTime) == Math.Floor(totalTime))
+                    {
+                        boomboxItem.boomboxAudio.Stop();
+                        boomboxItem.isPlayingMusic = false;
+                        waitAutoNext = true;
+                    }
+                }
+                else
+                {
+                    if(totalTack == 1)
+                    {
+                        if (Math.Floor(curretTime) == Math.Floor(totalTime))
+                        {
+                            boomboxItem.boomboxAudio.time = 0;
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        boomboxItem.boomboxAudio.Stop();
+                        currectTrack = 0;
+                        boomboxItem.boomboxAudio.time = 0;
+                        boomboxItem.boomboxAudio.clip = musicList[currectTrack];
+                        boomboxItem.boomboxAudio.Play();
+                    }
+                }
             }
-            else boomboxItem.boomboxAudio.time = 0;
-            if (musicList != null)
+            else
             {
-                totalTack = musicList.Length;
+                if (musicList != null)
+                {
+                    if (waitAutoNext)
+                    {
+                        currectTrack = currectTrack + 1;
+                        Plugin.instance.Log($"Position track: {currectTrack}");
+                        boomboxItem.boomboxAudio.clip = musicList[currectTrack];
+                        boomboxItem.boomboxAudio.time = 0;
+                        boomboxItem.isPlayingMusic = true;
+                        waitAutoNext = false;
+                        boomboxItem.boomboxAudio.Play();
+                    }
+                }
             }
         }
 
@@ -631,12 +679,14 @@ namespace BoomboxController
                                                     ext.MoveTo(@$"BoomboxController\other\{NameTrack.Replace(sumb, "")}");
                                                 }
                                                 currectTrack = 0;
+                                                boomboxItem.boomboxAudio.time = 0;
                                                 bom.Start(bom.GetAudioClip(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\{NameFile}", boomboxItem, AudioType.MPEG));
                                                 DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox Music YouTube", nameOfUserWhoTyped);
                                             }
                                             else
                                             {
                                                 currectTrack = 0;
+                                                boomboxItem.boomboxAudio.time = 0;
                                                 bom.Start(bom.GetAudioClip(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\{NameTrack}", boomboxItem, AudioType.MPEG));
                                                 DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox Music YouTube", nameOfUserWhoTyped);
                                             }
@@ -739,12 +789,14 @@ namespace BoomboxController
                                                     ext.MoveTo(@$"BoomboxController\other\{NameTrack.Replace(sumb, "")}");
                                                 }
                                                 currectTrack = 0;
+                                                boomboxItem.boomboxAudio.time = 0;
                                                 bom.Start(bom.GetAudioClip(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\{NameFile}", boomboxItem, AudioType.MPEG));
                                                 DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox YouTube", nameOfUserWhoTyped);
                                             }
                                             else
                                             {
                                                 currectTrack = 0;
+                                                boomboxItem.boomboxAudio.time = 0;
                                                 bom.Start(bom.GetAudioClip(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\{NameTrack}", boomboxItem, AudioType.MPEG));
                                                 DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox YouTube", nameOfUserWhoTyped);
                                             }
@@ -824,6 +876,7 @@ namespace BoomboxController
                                                 }
                                             }
                                             currectTrack = 0;
+                                            boomboxItem.boomboxAudio.time = 0;
                                             thread = new Thread(() => LoadPlaylist(__instance, nameOfUserWhoTyped));
                                             thread.Start();
                                         }
@@ -924,12 +977,14 @@ namespace BoomboxController
                                                     ext.MoveTo(@$"BoomboxController\other\{NameTrack.Replace(sumb, "")}");
                                                 }
                                                 currectTrack = 0;
+                                                boomboxItem.boomboxAudio.time = 0;
                                                 bom.Start(bom.GetAudioClip(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\{NameFile}", boomboxItem, AudioType.MPEG));
                                                 DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox YouTube", nameOfUserWhoTyped);
                                             }
                                             else
                                             {
                                                 currectTrack = 0;
+                                                boomboxItem.boomboxAudio.time = 0;
                                                 bom.Start(bom.GetAudioClip(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\{NameTrack}", boomboxItem, AudioType.MPEG));
                                                 DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox YouTube", nameOfUserWhoTyped);
                                             }
@@ -1001,6 +1056,7 @@ namespace BoomboxController
                                                 break;
                                             }
                                             currectTrack = 0;
+                                            boomboxItem.boomboxAudio.time = 0;
                                             bom.Start(bom.GetAudioClip(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\{NameTrack}", boomboxItem, AudioType.MPEG));
                                             DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox SoundCloud", nameOfUserWhoTyped);
                                         }
@@ -1174,6 +1230,7 @@ namespace BoomboxController
                                 timesPlayedWithoutTurningOff = 0;
                                 boomboxItem.boomboxAudio.clip = musicList[currectTrack];
                                 boomboxItem.boomboxAudio.pitch = 1f;
+                                boomboxItem.boomboxAudio.time = 0;
                                 boomboxItem.boomboxAudio.Play();
                                 DrawString(__instance, Plugin.config.GetLang().main_14.Value.Replace("@1", $"{vs[1]}"), "Boombox", nameOfUserWhoTyped);
                             }
