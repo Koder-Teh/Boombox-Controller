@@ -42,7 +42,7 @@ using static UnityEngine.UIElements.StylePropertyAnimationSystem;
 
 namespace BoomboxController
 {
-    [BepInPlugin("KoderTech.BoomboxController", "BoomboxController", "1.1.9")]
+    [BepInPlugin("KoderTech.BoomboxController", "BoomboxController", "1.2.1")]
     public class Plugin : BaseUnityPlugin
     {
         public static Plugin instance;
@@ -71,6 +71,7 @@ namespace BoomboxController
             WriteLogo();
             if (!Directory.Exists(@$"BoomboxController\lang")) Directory.CreateDirectory(@$"BoomboxController\lang");
             if (!Directory.Exists(@$"BoomboxController\other")) Directory.CreateDirectory(@$"BoomboxController\other");
+            if (!Directory.Exists(@$"BoomboxController\other\local")) Directory.CreateDirectory(@$"BoomboxController\other\local");
             if (!Directory.Exists(@$"BoomboxController\other\playlist")) Directory.CreateDirectory(@$"BoomboxController\other\playlist");
             if (!File.Exists(@$"BoomboxController\other\ffmpeg.exe"))
             {
@@ -90,6 +91,7 @@ namespace BoomboxController
             }
             HarmonyLib = new Harmony("com.kodertech.BoomboxController");
             HarmonyLib.PatchAll(typeof(BoomboxController));
+            HarmonyLib.PatchAll(typeof(GrabbleBoombox));
         }
 
         public void WriteLogo()

@@ -6,6 +6,12 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.Networking;
 using UnityEngine;
+using System.IO;
+using BepInEx;
+using System.Drawing.Design;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
+using UnityEngine.UIElements;
+using System.Threading;
 
 namespace BoomboxController
 {
@@ -51,11 +57,13 @@ namespace BoomboxController
             }
         }
 
-        public IEnumerator GetPlayList(string url, BoomboxItem boombox, AudioType type)
+        public async Task GetPlayList(string url, BoomboxItem boombox, AudioType type)
         {
             using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(url, type))
             {
-                yield return www.SendWebRequest();
+                var content = www.SendWebRequest();
+
+                while(!content.isDone) await Task.Delay(100);
 
                 if (www.result == UnityWebRequest.Result.ConnectionError)
                 {
@@ -65,6 +73,7 @@ namespace BoomboxController
                 {
                     AudioClip myClip = DownloadHandlerAudioClip.GetContent(www);
                     audioclipsplay.Add(myClip);
+                    //Plugin.instance.Log(url);
                 }
             }
         }

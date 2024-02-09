@@ -63,7 +63,6 @@ namespace BoomboxController
         public static string LastnameOfUserWhoTyped;
         public static double curretTime = 0;
         public static double totalTime = 0;
-        public static Thread thread;
         public static bool isplayList = false;
         public static int Id = 0;
         public static int totalTack = 0;
@@ -77,6 +76,8 @@ namespace BoomboxController
         public static KeyControl down = null;
         private static bool blockcompatibility = false;
         public static bool waitAutoNext = false;
+        public static bool netSwitch = true;
+        public static bool currentTrackChange = false;
 
         #region Стартеры
 
@@ -406,6 +407,10 @@ namespace BoomboxController
                 Plugin.instance.Log(startMusic + " startmusic");
                 if (startMusic)
                 {
+                    if (!currentTrackChange)
+                    {
+                        currectTrack = UnityEngine.Random.Range(0, totalTack - 1);
+                    }
                     boomboxItem.boomboxAudio.clip = musicList[currectTrack];
                     boomboxItem.boomboxAudio.pitch = 1f;
                     boomboxItem.boomboxAudio.Play();
@@ -421,8 +426,15 @@ namespace BoomboxController
                     boomboxItem.isPlayingMusic = startMusic;
                     boomboxItem.isBeingUsed = startMusic;
                     startMusics = true;
+                    currentTrackChange = false;
                 }
             }
+            //else
+            //{
+            //    boomboxItem.isBeingUsed = false;
+            //    boomboxItem.UseItemOnClient();
+            //    //DrawString(HUDManager.Instance, Plugin.config.GetLang().main_3.Value, "Boombox", "Boombox");
+            //}
             return false;
         }
 
@@ -464,11 +476,14 @@ namespace BoomboxController
                     }
                     else
                     {
-                        boomboxItem.boomboxAudio.Stop();
-                        currectTrack = 0;
-                        boomboxItem.boomboxAudio.time = 0;
-                        boomboxItem.boomboxAudio.clip = musicList[currectTrack];
-                        boomboxItem.boomboxAudio.Play();
+                        if (Math.Floor(curretTime) == (Math.Floor(totalTime)-1))
+                        {
+                            boomboxItem.boomboxAudio.Stop();
+                            currectTrack = 0;
+                            boomboxItem.boomboxAudio.time = 0;
+                            boomboxItem.boomboxAudio.clip = musicList[currectTrack];
+                            boomboxItem.boomboxAudio.Play();
+                        }
                     }
                 }
             }
@@ -576,6 +591,7 @@ namespace BoomboxController
                         }
                         break;
                     case "bplay":
+                        if (!netSwitch) break;
                         if (vs.Length == 1) break;
                         Regex regex = new Regex("^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$");
                         if (regex.IsMatch(vs[1]))
@@ -877,8 +893,7 @@ namespace BoomboxController
                                             }
                                             currectTrack = 0;
                                             boomboxItem.boomboxAudio.time = 0;
-                                            thread = new Thread(() => LoadPlaylist(__instance, nameOfUserWhoTyped));
-                                            thread.Start();
+                                            await LoadPlaylist(__instance, nameOfUserWhoTyped);
                                         }
                                         break;
                                     }
@@ -1232,10 +1247,77 @@ namespace BoomboxController
                                 boomboxItem.boomboxAudio.pitch = 1f;
                                 boomboxItem.boomboxAudio.time = 0;
                                 boomboxItem.boomboxAudio.Play();
+                                if (startMusics)
+                                {
+                                    boomboxItem.isPlayingMusic = true;
+                                    boomboxItem.isBeingUsed = true;
+                                    startMusics = false;
+                                }
+                                currentTrackChange = true;
                                 DrawString(__instance, Plugin.config.GetLang().main_14.Value.Replace("@1", $"{vs[1]}"), "Boombox", nameOfUserWhoTyped);
                             }
                         }
                         break;
+                    case "bswitch":
+                        if (vs.Length == 1) break;
+                        switch (vs[1])
+                        {
+                            case "net":
+                                netSwitch = true;
+                                musicList = null;
+                                totalTack = 0;
+                                boomboxItem.boomboxAudio.Stop();
+                                boomboxItem.boomboxAudio.PlayOneShot(boomboxItem.stopAudios[UnityEngine.Random.Range(0, boomboxItem.stopAudios.Length)]);
+                                timesPlayedWithoutTurningOff = 0;
+                                boomboxItem.isPlayingMusic = false;
+                                boomboxItem.isBeingUsed = false;
+                                currectTrack = 0;
+                                boomboxItem.boomboxAudio.time = 0;
+                                DrawString(__instance, "The link URL is available!", "Boombox", nameOfUserWhoTyped);
+                                break;
+                            case "local":
+                                if (!isplayList)
+                                {
+                                    NameTrack = "Local-Music";
+                                    isplayList = true;
+                                    DrawString(__instance, "Loading...", "Boombox", nameOfUserWhoTyped);
+                                    boomboxItem.boomboxAudio.Stop();
+                                    boomboxItem.boomboxAudio.PlayOneShot(boomboxItem.stopAudios[UnityEngine.Random.Range(0, boomboxItem.stopAudios.Length)]);
+                                    timesPlayedWithoutTurningOff = 0;
+                                    boomboxItem.isPlayingMusic = false;
+                                    boomboxItem.isBeingUsed = false;
+                                    currectTrack = 0;
+                                    boomboxItem.boomboxAudio.time = 0;
+                                    await LoadMusicLocal(__instance, nameOfUserWhoTyped);
+                                    netSwitch = false;
+                                    DrawString(__instance, "Local music is available!", "Boombox", nameOfUserWhoTyped);
+                                }
+                                break;
+                        }
+                        break;
+                    case "bload":
+                        if (netSwitch) break;
+                        if (isplayList)
+                        {
+                            isplayList = true;
+                            DrawString(__instance, "Loading...", "Boombox", nameOfUserWhoTyped);
+                            boomboxItem.boomboxAudio.Stop();
+                            boomboxItem.boomboxAudio.PlayOneShot(boomboxItem.stopAudios[UnityEngine.Random.Range(0, boomboxItem.stopAudios.Length)]);
+                            timesPlayedWithoutTurningOff = 0;
+                            boomboxItem.isPlayingMusic = false;
+                            boomboxItem.isBeingUsed = false;
+                            currectTrack = 0;
+                            boomboxItem.boomboxAudio.time = 0;
+                            await LoadMusicLocal(__instance, nameOfUserWhoTyped);
+                        }
+                        break;
+                    //case "bmenu":
+                    //    if (!isplayList)
+                    //    {
+                    //        isplayList = true;
+                    //        CreateMenu();
+                    //    }
+                    //    break;
                 }
             }
         }
@@ -1337,6 +1419,19 @@ namespace BoomboxController
 
         #region Остальное
 
+        public static void CreateMenu()
+        {
+            GameObject canvas = GameObject.Find("Canvas");
+            GameObject panel = new GameObject("BoomboxMenu");
+            panel.AddComponent<UnityEngine.UI.Image>();
+            panel.AddComponent<RectTransform>();
+            panel.AddComponent<CanvasRenderer>();
+            panel.transform.localScale = new Vector3(5, 2, 1);
+            panel.GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 0.180f);
+            panel.transform.SetParent(canvas.transform, false);
+            isplayList = false;
+        }
+
         public static bool IsCommand(string text, string[] args)
         {
             foreach (string command in args)
@@ -1384,28 +1479,41 @@ namespace BoomboxController
             return -1;
         }
 
-        public static void LoadPlaylist(HUDManager __instance, string nameOfUserWhoTyped)
+        public static async Task LoadMusicLocal(HUDManager __instance, string nameOfUserWhoTyped)
         {
-            bool isPlaying = false;
-            int total = 0;
-            int allcount = new DirectoryInfo(@"BoomboxController\other\playlist").GetFiles().Length;
-            FileInfo[] track = new DirectoryInfo(@"BoomboxController\other\playlist").GetFiles();
-            while (!isPlaying)
+            await Task.Run(async () =>
             {
-                if (total == allcount) break;
-                if (track[total].Exists)
+                FileInfo[] track = new DirectoryInfo(@"BoomboxController\other\local").GetFiles();
+                foreach(FileInfo file in track)
                 {
-                    bom.Start(bom.GetPlayList(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\playlist\{track[total].Name}", boomboxItem, AudioType.MPEG));
-                    total++;
+                    await bom.GetPlayList(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\local\{file.Name}", boomboxItem, AudioType.MPEG);
                 }
-                System.Threading.Thread.Sleep(2000);
-            }
-            musicList = bom.audioclipsplay.ToArray();
-            bom.audioclipsplay.Clear();
-            LoadingMusicBoombox = false;
-            DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox YouTube", nameOfUserWhoTyped);
-            isplayList = false;
-            thread.Abort();
+                if(track.Length != 0)
+                {
+                    musicList = bom.audioclipsplay.ToArray();
+                    bom.audioclipsplay.Clear();
+                }
+                isplayList = false;
+                LoadingMusicBoombox = false;
+                DrawString(__instance, "Tracks Loading", "Boombox", nameOfUserWhoTyped);
+            });
+        }
+
+        public static async Task LoadPlaylist(HUDManager __instance, string nameOfUserWhoTyped)
+        {
+            await Task.Run(async () =>
+            {
+                FileInfo[] track = new DirectoryInfo(@"BoomboxController\other\playlist").GetFiles();
+                foreach (FileInfo file in track)
+                {
+                    await bom.GetPlayList(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\playlist\{file.Name}", boomboxItem, AudioType.MPEG);
+                }
+                musicList = bom.audioclipsplay.ToArray();
+                bom.audioclipsplay.Clear();
+                LoadingMusicBoombox = false;
+                DrawString(__instance, Plugin.config.GetLang().main_8.Value, "Boombox YouTube", nameOfUserWhoTyped);
+                isplayList = false;
+            });
         }
 
         public static int FirstEmptyItemSlot(PlayerControllerB __instance)
