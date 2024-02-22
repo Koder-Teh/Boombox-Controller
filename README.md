@@ -23,6 +23,26 @@ To change the color of the boombox you have to edit the mod's config on the "Let
 You can now change bindings in the game via settings.
 ![](https://i.imgur.com/6viaPdJ.jpg)
 
+### Upload local songs
+
+Local songs should be thrown into the folder "Lethal Company\BoomboxController\other\local".
+Necessarily! The file must contain the mp3 format.
+![](https://i.imgur.com/BDGrwXv.jpg)
+
+The mod has two modes of operation: net - local. 
+Command example: /bswitch local or /bswitch net
+![](https://i.imgur.com/ZU5b4sw.jpg)
+![](https://i.imgur.com/jQV2sl6.jpg)
+
+I also added the /bload command. This command is needed in order to update the playlist of music uploaded to the game in real time.
+![](https://i.imgur.com/9YSoeEO.jpg)
+
+### Video reviews
+
+[![Watch the video](https://img.youtube.com/vi/AvOaXy9P3BM/hqdefault.jpg)](https://www.youtube.com/embed/AvOaXy9P3BM)
+
+[![Watch the video](https://img.youtube.com/vi/lQtdDplRvNk/hqdefault.jpg)](https://www.youtube.com/embed/lQtdDplRvNk)
+
 ### Wiki
 
 You can see more information in the wiki.
@@ -46,6 +66,8 @@ There are currently two translations available:
 9. Memorizing what the volume was after quitting the game.
 10. Allows boombox to continue playing music after switching slots (inside your inventory).
 11. The radius of the boombox commands has become infinite (can be disabled in the mod settings).
+12. Automatically switch the track to the next one when playing the playlist.
+13. Allows to upload songs from your computer.
 
 ### Supported links:
 
@@ -67,6 +89,10 @@ There are currently two translations available:
 /btime <timecode> - Place track position (example: /btime 1:20)
 
 /btrack <track number> - Switch to another track from a playlist (example: /btrack 2)
+
+/bswitch <net or local> - Changes the mode of song uploading. From a computer or from a link.
+
+/bload - Allows you to reload an available playlist that is currently in the game.
 ```
 
 ### Special thanks to all my friends and teammates:

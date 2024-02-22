@@ -1,3 +1,45 @@
+-   **1.2.2**
+
+	-	Another blocked link has been added.
+	-	Checking for characters in playlist names and song uploads from your computer.
+	
+-   **1.2.1**
+
+	-	Now, when you turn on the boombox, random music will play. If the /btrack command is not used.
+	-	Fixed a bug related to the /btrack command.
+	-	Uploading a playlist from YouTube has been converted to an asynchronous stream.
+	-	Uploading songs from the computer was converted to an asynchronous stream.
+
+-   **1.2.0**
+
+	-	Allows to upload songs from your computer.
+
+-   **1.1.9**
+
+	-	Automatically switch the track to the next one when playing the playlist.
+	-	Added weight for the boombox 0.
+	-	Added a character to the list of characters with automatic replacement.
+
+-   **1.1.8**
+
+	-	Added the radius of the commands at the boombox (Setting in the configuration).
+	-	Added support for shortened link from youtube: "music.youtube.com".
+
+-   **1.1.7**
+
+	-	Rewrote the logic of logReport.txt file recording.
+	-	Banned the use of my mod with another mod: "BoomboxSyncFix".
+	-	Added support for shortened link from youtube: "youtu.be".
+	-	Fixed an error that came out after sending a command without arguments.
+
+-   **1.1.6**
+
+	-	Code refactoring has been done.
+	-	Rewrote the method of sending messages to chat. For compatibility.
+	-	Added toggle to enable and disable visual boombox elements.
+	-	Added a check for broken zip files. Automatically re-downloads them.
+	-	Fixed a bug with the config for music.
+
 -   **1.1.5**
 
 	-	Revamped the chat command system (for compatibility with the LethalExpansion mod).
