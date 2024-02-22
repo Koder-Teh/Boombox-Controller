@@ -600,6 +600,7 @@ namespace BoomboxController
                             switch (url.Substring(0, url.IndexOf('/')))
                             {
                                 case "music.youtube.com":
+                                    if (url.Remove(0, url.IndexOf('/')) == "/watch") break;
                                     if (vs[1].Contains("list"))
                                     {
                                         DrawString(__instance, Plugin.config.GetLang().main_6.Value, "Boombox Music YouTube", nameOfUserWhoTyped);
@@ -710,6 +711,7 @@ namespace BoomboxController
                                     }
                                     break;
                                 case "youtu.be":
+                                    if (url.Remove(0, url.IndexOf('/')) == "/watch") break;
                                     if (vs[1].Contains("list"))
                                     {
                                         DrawString(__instance, Plugin.config.GetLang().main_6.Value, "Boombox Music YouTube", nameOfUserWhoTyped);
@@ -820,6 +822,7 @@ namespace BoomboxController
                                     }
                                     break;
                                 case "www.youtube.com":
+                                    if (url.Remove(0, url.IndexOf('/')) == "/watch") break;
                                     if (vs[1].Contains("search_query"))
                                     {
                                         DrawString(__instance, Plugin.config.GetLang().main_6.Value, "Boombox YouTube", nameOfUserWhoTyped);
@@ -1484,7 +1487,20 @@ namespace BoomboxController
             await Task.Run(async () =>
             {
                 FileInfo[] track = new DirectoryInfo(@"BoomboxController\other\local").GetFiles();
-                foreach(FileInfo file in track)
+                foreach (var t in track)
+                {
+                    foreach (var f in sumbols)
+                    {
+                        if (t.Exists)
+                        {
+                            if (t.Name.Contains(f))
+                            {
+                                t.MoveTo(@$"BoomboxController\other\local\{t.Name.Replace(f, "")}");
+                            }
+                        }
+                    }
+                }
+                foreach (FileInfo file in track)
                 {
                     await bom.GetPlayList(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\local\{file.Name}", boomboxItem, AudioType.MPEG);
                 }
@@ -1504,6 +1520,19 @@ namespace BoomboxController
             await Task.Run(async () =>
             {
                 FileInfo[] track = new DirectoryInfo(@"BoomboxController\other\playlist").GetFiles();
+                foreach(var t in track)
+                {
+                    foreach(var f in sumbols)
+                    {
+                        if (t.Exists)
+                        {
+                            if (t.Name.Contains(f))
+                            {
+                                t.MoveTo(@$"BoomboxController\other\playlist\{t.Name.Replace(f, "")}");
+                            }
+                        }
+                    }
+                }
                 foreach (FileInfo file in track)
                 {
                     await bom.GetPlayList(@"file:///" + Paths.GameRootPath + @$"\BoomboxController\other\playlist\{file.Name}", boomboxItem, AudioType.MPEG);

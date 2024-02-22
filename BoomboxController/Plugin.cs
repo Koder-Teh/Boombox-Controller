@@ -42,7 +42,7 @@ using static UnityEngine.UIElements.StylePropertyAnimationSystem;
 
 namespace BoomboxController
 {
-    [BepInPlugin("KoderTech.BoomboxController", "BoomboxController", "1.2.1")]
+    [BepInPlugin("KoderTech.BoomboxController", "BoomboxController", Version)]
     public class Plugin : BaseUnityPlugin
     {
         public static Plugin instance;
@@ -50,6 +50,8 @@ namespace BoomboxController
         private static Harmony HarmonyLib;
 
         public static Configs config;
+
+        public const string Version = "1.2.2";
 
         private void Awake()
         {
