@@ -4,6 +4,8 @@ This mod allows you to easily upload a track to the boombox by using chat
 
 If you liked the mod, please don't forget to give it a thumbs up
 
+Game: Lethal Company
+
 ### Visual
 
 Standard boombox visuals:
