@@ -36,7 +36,7 @@ namespace BoomboxController
             Unpacking();
             if (!File.Exists(@$"BoomboxController\other\yt-dlp.exe"))
             {
-                Thread thread = new Thread(() => DownloadFiles(new Uri("https://github.com/yt-dlp/yt-dlp/releases/download/2025.01.26/yt-dlp.exe"), @"BoomboxController\other\yt-dlp.exe"));
+                Thread thread = new Thread(() => DownloadFiles(new Uri("https://github.com/yt-dlp/yt-dlp/releases/download/2025.11.12/yt-dlp.exe"), @"BoomboxController\other\yt-dlp.exe"));
                 thread.Start();
             }
             Thread.CurrentThread.Abort();
